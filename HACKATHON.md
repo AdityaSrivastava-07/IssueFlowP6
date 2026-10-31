@@ -18,7 +18,6 @@
   Resmanth Kumar Beesetti [@resmanth](https://github.com/resmanth)                         Not specified
 
   Aditya Dhanraj Singh    [@adityasingh916](https://github.com/adityasingh916)             Not specified
-  
   ----------------------------------------------------------------------------------------------------------------
 
 ## Selected Problem Statement
@@ -76,7 +75,7 @@ The planned workflow is to:
 ## Repository
 
 -   **Repository Name:** `IssueFlowP6`
--   **Repository URL:** [IssueFlowP6](https://github.com/AdityaSrivastava-07/IssueFlowP6.git)
+-   **Repository URL:** [Github link](https://github.com/AdityaSrivastava-07/IssueFlowP6).
 
 ------------------------------------------------------------------------
 
