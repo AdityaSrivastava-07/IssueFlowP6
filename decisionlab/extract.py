@@ -11,7 +11,7 @@ Each item must have these keys:
 - "status": "accepted" or "rejected"
 - "alternative": what was considered and not chosen, or "" if none
 - "reason": why the choice was made, or "" if not stated
-- "quote": one sentence copied word for word from the discussion that supports the decision
+- "quote": copy one sentence word for word exactly as it appears in the discussion text, do not paraphrase
 
 Only include decisions the discussion explicitly states. Do not guess.
 If there are no decisions, return {"decisions": []}.

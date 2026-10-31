@@ -45,8 +45,8 @@ def main():
         discussion_text = input_path.read_text(encoding="utf-8")
 
         print(f"-> Reading & extracting decisions from {input_path} using qwen2.5:7b...")
-        # Fixed: Calls your function directly with the filepath
-        raw_result = extract_decisions(str(input_path))
+        # Pass the actual file contents (not the path) to the model
+        raw_result = extract_decisions(discussion_text)
 
         print(f"-> Running Srivastava's Fact-Checker verification engine...")
         # Fixed: Passes the list directly instead of trying to use .get()
