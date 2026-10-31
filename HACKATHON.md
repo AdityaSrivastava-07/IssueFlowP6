@@ -75,7 +75,7 @@ The planned workflow is to:
 ## Repository
 
 -   **Repository Name:** `IssueFlowP6`
--   **Repository URL:** To be added after repository creation.
+-   **Repository URL:** [Github link](https://github.com/AdityaSrivastava-07/IssueFlowP6).
 
 ------------------------------------------------------------------------
 
