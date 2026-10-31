@@ -1,0 +1,56 @@
+=== SYNTHETIC EXAMPLE DATA ===
+This file is a fictional, synthetic engineering discussion created for testing
+and demonstration purposes. It does not represent real project history or real
+contributors.
+
+Thread: API design: REST vs GraphQL and versioning
+Date: 2024-04-17
+Participants: dev_alice, bob_codes, diana_eng, eve_arch
+
+[2024-04-17 09:00] dev_alice:
+For the public API, I propose REST with JSON. It is simple, cacheable, and
+every client understands it. Versioning via URL prefix /v1.
+
+[2024-04-17 09:15] bob_codes:
+GraphQL would let clients fetch exactly what they need and reduce round trips.
+I think we should go GraphQL-first.
+
+[2024-04-17 09:30] diana_eng:
+GraphQL adds complexity: caching is harder, query cost analysis, and our
+clients are mostly internal services that do not need flexible queries. REST
+is a better fit.
+
+[2024-04-17 09:48] eve_arch:
+I agree with REST for now. But we should design resources so a future
+GraphQL layer can be added without breaking changes.
+
+[2024-04-17 10:05] bob_codes:
+Rejected alternative: GraphQL-first. Reason: higher operational complexity and
+no demonstrated client need. We can revisit when external clients request it.
+
+[2024-04-17 10:20] dev_alice:
+Proposed change: REST /v1 endpoints with standard HTTP verbs, JSON bodies,
+and cursor-based pagination. Auth via bearer tokens. Rate limiting at 100
+req/min per token.
+
+[2024-04-17 10:38] diana_eng:
+I would prefer API-key auth for service-to-service calls instead of bearer
+tokens. Simpler rotation and no expiry handling.
+
+[2024-04-17 10:55] eve_arch:
+Decision: use bearer tokens for user-facing calls and API keys for
+service-to-service, both validated by the same auth middleware. Rate limiting
+applies to both.
+
+[2024-04-17 11:10] dev_alice:
+Final decision: REST /v1, JSON, cursor pagination, bearer tokens (users) and
+API keys (services), rate limit 100 req/min per credential. GraphQL deferred
+until external demand. Rationale: simplicity, cacheability, and incremental
+evolution.
+
+Rejected alternatives summary:
+- GraphQL-first: rejected due to complexity and lack of client need.
+- API keys only: rejected; users need short-lived bearer tokens.
+- Offset pagination: rejected due to inconsistent results under writes.
+
+Final decision: REST v1 with cursor pagination, dual auth, rate limiting.

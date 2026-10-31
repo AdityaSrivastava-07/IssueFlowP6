@@ -1,0 +1,56 @@
+=== SYNTHETIC EXAMPLE DATA ===
+This file is a fictional, synthetic engineering discussion created for testing
+and demonstration purposes. It does not represent real project history or real
+contributors.
+
+Thread: Database choice and schema for event store
+Date: 2024-04-03
+Participants: dev_alice, bob_codes, charlie_dev, eve_arch
+
+[2024-04-03 10:00] dev_alice:
+We need a database for the event store. I propose PostgreSQL. It is robust,
+supports JSONB for flexible payloads, and we already run it in prod.
+
+[2024-04-03 10:12] bob_codes:
+Postgres is heavy for local dev and CI. I would prefer SQLite for simplicity.
+Single file, zero config, easy to reset in tests.
+
+[2024-04-03 10:25] charlie_dev:
+SQLite will not handle concurrent writers well once we add background workers.
+We will hit "database is locked" errors. Postgres is the safer bet.
+
+[2024-04-03 10:40] eve_arch:
+What about a hybrid: SQLite for local dev/tests, Postgres for prod, behind a
+repository interface? That keeps dev simple while scaling in prod.
+
+[2024-04-03 10:58] dev_alice:
+Rejected alternative: SQLite in production. Reason: concurrent write contention
+and lack of row-level locking under load. We cannot risk data loss in the
+event store.
+
+[2024-04-03 11:10] bob_codes:
+I am worried about dev friction with Postgres. Can we provide a docker-compose
+for local setup and keep SQLite as an optional fallback for unit tests?
+
+[2024-04-03 11:22] charlie_dev:
+Proposed change: define a storage interface (EventStore) with two
+implementations: PostgresEventStore (default/prod) and SQLiteEventStore (tests
+only). The SQLite impl is not supported for production use.
+
+[2024-04-03 11:35] eve_arch:
+Agreed, but we must guard against accidental prod use of SQLite. Add a startup
+check that refuses SQLite when ENV=production.
+
+[2024-04-03 11:50] dev_alice:
+Decision: PostgreSQL is the primary and only production database. SQLite is
+permitted solely for unit/integration tests behind the storage interface.
+Schema uses JSONB for event payloads and an index on (aggregate_id,
+sequence_number). Migrations via Alembic. Rationale: correctness under
+concurrency, operational familiarity, and a clean test boundary.
+
+Rejected alternatives summary:
+- SQLite in production: rejected due to write contention and locking.
+- MongoDB: rejected due to lack of transactional guarantees we need for events.
+- Hybrid dev/prod without interface guard: rejected due to risk of misuse.
+
+Final decision: PostgreSQL primary; SQLite tests-only; JSONB payloads; Alembic migrations.
