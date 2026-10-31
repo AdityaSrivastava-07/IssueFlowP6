@@ -1,0 +1,17 @@
+{
+  "decisions": [
+    {
+      "decision": "PostgreSQL is chosen as the primary and only production database, while SQLite is permitted for unit/integration tests behind a storage interface.",
+      "status": "accepted",
+      "alternative": "SQLite in production, MongoDB",
+      "reason": "Correctness under concurrency, operational familiarity, and a clean test boundary.",
+      "quote": "Decision: PostgreSQL is the primary and only production database. SQLite is permitted solely for unit/integration tests behind the storage interface.",
+      "verified": true
+    }
+  ],
+  "verification_stats": {
+    "total_extracted": 1,
+    "verified_kept": 1,
+    "hallucinations_removed": 0
+  }
+}

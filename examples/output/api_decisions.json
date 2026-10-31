@@ -1,0 +1,41 @@
+{
+  "decisions": [
+    {
+      "decision": "Use REST API with v1 versioning",
+      "status": "accepted",
+      "alternative": "GraphQL-first",
+      "reason": "Operational complexity and no demonstrated client need",
+      "quote": "Rejected alternative: GraphQL-first. Reason: higher operational complexity and no demonstrated client need. We can revisit when external clients request it.",
+      "verified": true
+    },
+    {
+      "decision": "Use bearer tokens for user-facing calls and API keys for service-to-service calls",
+      "status": "accepted",
+      "alternative": "API keys only",
+      "reason": "Users need short-lived bearer tokens",
+      "quote": "Rejected alternatives summary:\n- GraphQL-first: rejected due to complexity and lack of client need.\n- API keys only: rejected; users need short-lived bearer tokens.",
+      "verified": true
+    },
+    {
+      "decision": "Implement cursor-based pagination",
+      "status": "accepted",
+      "alternative": "Offset pagination",
+      "reason": "Inconsistent results under writes",
+      "quote": "Rejected alternatives summary:\n- GraphQL-first: rejected due to complexity and lack of client need.\n- API keys only: rejected; users need short-lived bearer tokens.\n- Offset pagination: rejected due to inconsistent results under writes.",
+      "verified": true
+    },
+    {
+      "decision": "Apply rate limiting at 100 req/min per credential",
+      "status": "accepted",
+      "alternative": "",
+      "reason": "",
+      "quote": "Rate limiting at 100 req/min per token.",
+      "verified": true
+    }
+  ],
+  "verification_stats": {
+    "total_extracted": 4,
+    "verified_kept": 4,
+    "hallucinations_removed": 0
+  }
+}

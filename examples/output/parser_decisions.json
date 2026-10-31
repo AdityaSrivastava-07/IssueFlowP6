@@ -1,0 +1,33 @@
+{
+  "decisions": [
+    {
+      "decision": "v1 ships JSON-only as the default and required format",
+      "status": "accepted",
+      "alternative": "TOML as default in v1, YAML",
+      "reason": "minimize dependencies, keep parsing simple, preserve a documented migration path",
+      "quote": "JSON-only as the default and required format. TOML support is deferred to v2 and gated behind an optional dependency.",
+      "verified": true
+    },
+    {
+      "decision": "TOML support is deferred to v2 and gated behind an optional dependency",
+      "status": "accepted",
+      "alternative": "TOML as default in v1",
+      "reason": "minimize dependencies, keep parsing simple, preserve a documented migration path",
+      "quote": "TOML support is deferred to v2 and gated behind an optional dependency.",
+      "verified": true
+    },
+    {
+      "decision": "YAML is not supported",
+      "status": "accepted",
+      "alternative": "YAML",
+      "reason": "minimize dependencies, keep parsing simple, preserve a documented migration path",
+      "quote": "YAML is rejected for v1 due to security and complexity concerns.",
+      "verified": true
+    }
+  ],
+  "verification_stats": {
+    "total_extracted": 3,
+    "verified_kept": 3,
+    "hallucinations_removed": 0
+  }
+}
