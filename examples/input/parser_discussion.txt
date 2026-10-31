@@ -1,0 +1,63 @@
+=== SYNTHETIC EXAMPLE DATA ===
+This file is a fictional, synthetic engineering discussion created for testing
+and demonstration purposes. It does not represent real project history or real
+contributors.
+
+Thread: Choosing a configuration file parser
+Date: 2024-03-12
+Participants: dev_alice, bob_codes, charlie_dev, diana_eng
+
+[2024-03-12 09:14] dev_alice:
+We need to settle on a config parser for the new settings module. I propose
+we support JSON only for v1. It is built into the standard library, every
+contributor already knows it, and parsing is fast enough for our use case.
+
+[2024-03-12 09:21] bob_codes:
+I disagree. JSON has no comments, which makes configuration files hard to
+maintain for operators. I would prefer YAML. PyYAML is mature and comments help
+a lot in ops-heavy configs.
+
+[2024-03-12 09:33] charlie_dev:
+YAML is too permissive and the security implications of arbitrary tags worry
+me. What about TOML? It is designed for config, supports comments, and has a
+standard library module in Python 3.11 (tomllib).
+
+[2024-03-12 09:45] diana_eng:
+I like TOML but we still support Python 3.9 in production. tomllib is not
+available there. We would need a third-party dependency (tomli) and that adds
+maintenance burden.
+
+[2024-03-12 10:02] dev_alice:
+Good point. What if we use JSON for v1 and revisit TOML once we drop 3.9?
+That keeps the dependency surface small.
+
+[2024-03-12 10:18] bob_codes:
+Rejected alternative: keep JSON-only with no migration path. Reason: operators
+will hand-edit these files and lack of comments leads to mistakes. We need
+at least a documented upgrade path to a comment-capable format.
+
+[2024-03-12 10:30] charlie_dev:
+Proposed change: accept TOML via tomli on 3.9/3.10 and tomllib on 3.11+,
+gated behind an optional dependency group "config-toml". JSON remains the
+default and required format.
+
+[2024-03-12 10:44] diana_eng:
+I am concerned about two code paths and inconsistent behavior. If TOML is
+optional, tests must cover both. That is extra work but acceptable if we
+document it clearly.
+
+[2024-03-12 11:05] dev_alice:
+Decision: v1 ships JSON-only as the default and required format. TOML support
+is deferred to v2 and gated behind an optional dependency. YAML is rejected
+for v1 due to security and complexity concerns. Rationale: minimize
+dependencies, keep parsing simple, preserve a documented migration path.
+
+[2024-03-12 11:07] bob_codes:
+Agreed, as long as the v2 TOML work is tracked. I will open an issue.
+
+Rejected alternatives summary:
+- YAML (PyYAML): rejected due to security risks of arbitrary tags and added dependency.
+- TOML as default in v1: rejected due to Python 3.9 compatibility and optional-dependency complexity.
+- JSON with no migration path: rejected due to operator maintainability.
+
+Final decision: JSON-only default for v1; TOML optional in v2; YAML not supported.
