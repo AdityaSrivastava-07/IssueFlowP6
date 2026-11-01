@@ -1,75 +1,55 @@
 import json
-import requests
+import urllib.request
+import urllib.error
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-DEFAULT_MODEL = "qwen2.5:7b"
+def extract_decisions(discussion_text):
+    # Truncate text if it's too massive for the local 7B context window
+    max_chars = 20000
+    if len(discussion_text) > max_chars:
+        print(f"-> Warning: PR thread is {len(discussion_text)} chars. Truncating to fit context window...")
+        discussion_text = discussion_text[-max_chars:]
 
-PROMPT_HEADER = """Read the developer discussion below and extract the final technical decisions.
-Return ONLY a JSON object with a single key "decisions" containing a list.
-Each item must have these keys:
-- "decision": what was decided, in your own words
-- "status": "accepted" or "rejected"
-- "alternative": what was considered and not chosen, or "" if none
-- "reason": why the choice was made, or "" if not stated
-- "quote": copy one sentence word for word exactly as it appears in the discussion text, do not paraphrase
+    # Put the discussion first
+    full_prompt = f"Discussion:\n{discussion_text}\n\n"
+    
+    # Put the strict instructions AT THE VERY END so the model sees them last
+    full_prompt += (
+        "TASK: Extract the key architectural or technical decisions made in the text above. "
+        "You are an expert software architect. You MUST respond ONLY with a valid JSON object. "
+        "The JSON must follow this EXACT schema and contain a 'decisions' list: "
+        '{"decisions": [{"decision": "string", "status": "string", "alternative": "string", "reason": "string", "quote": "string"}]}'
+    )
 
-Only include decisions the discussion explicitly states. Do not guess.
-If there are no decisions, return {"decisions": []}.
-
-Discussion:
-"""
-
-
-def extract_decisions(discussion_text, model=DEFAULT_MODEL):
-    """Send a discussion to the local model and return a list of decision dicts.
-
-    Raises RuntimeError if Ollama is unreachable, and ValueError if the
-    model's output is not the expected JSON shape.
-    """
+    # Call local Ollama API
+    url = "http://localhost:11434/api/generate"
     payload = {
-        "model": model,
-        "prompt": PROMPT_HEADER + discussion_text,
-        "format": "json",
+        "model": "qwen2.5:7b",
+        "prompt": full_prompt,
         "stream": False,
+        "format": "json"  # <-- THIS FORCES OLLAMA TO ONLY OUTPUT VALID JSON
     }
-
+    
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+    
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=300)
-        response.raise_for_status()
-    except requests.exceptions.ConnectionError:
-        raise RuntimeError(
-            "Could not connect to Ollama at localhost:11434. "
-            "Is 'ollama serve' running?"
-        )
-    except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"Ollama request failed: {e}")
-
-    raw = response.json().get("response", "")
+        with urllib.request.urlopen(req) as response:
+            result = json.loads(response.read().decode())
+            raw_response = result.get("response", "")
+    except Exception as e:
+        raise RuntimeError(f"Failed to connect to local Ollama instance: {e}")
+        
+    # Safely parse the guaranteed JSON output
     try:
-        data = json.loads(raw)
+        data = json.loads(raw_response)
     except json.JSONDecodeError:
-        raise ValueError(f"Model did not return valid JSON. Raw output: {raw[:200]}")
+        raise ValueError(f"Model returned invalid JSON format. Raw output: {raw_response[:200]}...")
 
-    decisions = data.get("decisions") if isinstance(data, dict) else None
-    if not isinstance(decisions, list):
-        raise ValueError("Model JSON is missing a 'decisions' list.")
-
-    cleaned = []
-    for d in decisions:
-        if not isinstance(d, dict):
-            continue
-        if isinstance(d.get("status"), str):
-            d["status"] = d["status"].strip().lower()
-        cleaned.append(d)
-    return cleaned
-
-
-if __name__ == "__main__":
-    test_thread = """
-    User A: Should we use React or Vue for the new dashboard?
-    User B: Let's go with Vue because it is lighter, and React is overkill for this.
-    User A: I agree. Vue it is. React is rejected.
-    """
-    print("Sending text to Qwen (this may take 5 to 10 seconds)...")
-    results = extract_decisions(test_thread)
-    print(json.dumps(results, indent=2))
+    # Enforce Data Contract
+    if "decisions" not in data:
+        # Fallback: if the model returned a list directly instead of the wrapper object
+        if isinstance(data, list):
+            data = {"decisions": data}
+        else:
+            raise ValueError("Model JSON is missing a 'decisions' list.")
+        
+    return data

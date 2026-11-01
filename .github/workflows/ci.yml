@@ -1,4 +1,4 @@
-name: IssueFlow CI
+name: D-Mine
 
 on:
   push:
