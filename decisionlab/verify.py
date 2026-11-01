@@ -32,15 +32,24 @@ def is_quote_verified(quote: str, original_text: str) -> bool:
     return norm_quote in norm_source
 
 
-def verify_decisions(raw_decisions: List[Dict[str, Any]], original_text: str) -> Dict[str, Any]:
+def verify_decisions(raw_decisions: Any, original_text: str) -> Dict[str, Any]:
     """
-    Takes the list returned by extract.py and the raw original discussion text.
+    Takes the output from extract.py and the raw original discussion text.
     Deletes any decision whose quote cannot be verified in the original text.
     """
     verified_decisions: List[Dict[str, Any]] = []
     hallucinations_caught = 0
 
-    for item in raw_decisions:
+    # 1. Safeguard: Unpack the wrapper dict if cli.py passed the whole object
+    decisions_list = raw_decisions.get("decisions", []) if isinstance(raw_decisions, dict) else raw_decisions
+
+    for item in decisions_list:
+        # 2. Safeguard: Drop hallucinated list items that aren't dictionaries
+        if not isinstance(item, dict):
+            print(f"-> Fact-Checker: Dropping malformed schema item: {str(item)[:50]}...")
+            hallucinations_caught += 1
+            continue
+
         quote = item.get("quote", "")
         if is_quote_verified(quote, original_text):
             item["verified"] = True
@@ -51,7 +60,7 @@ def verify_decisions(raw_decisions: List[Dict[str, Any]], original_text: str) ->
     return {
         "decisions": verified_decisions,
         "verification_stats": {
-            "total_extracted": len(raw_decisions),
+            "total_extracted": len(decisions_list),
             "verified_kept": len(verified_decisions),
             "hallucinations_removed": hallucinations_caught,
         },
